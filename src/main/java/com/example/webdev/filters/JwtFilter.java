@@ -1,6 +1,8 @@
 package com.example.webdev.filters;
 
+import com.example.webdev.configs.CustomUserDetails;
 import com.example.webdev.configs.CustomUserDetailsService;
+import com.example.webdev.model.User;
 import com.example.webdev.utils.JWTUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -34,6 +37,8 @@ public class JwtFilter extends OncePerRequestFilter {
       String authorization = httpServletRequest.getHeader("Authorization");
       String token = null;
       String userName = null;
+      UserDetails userDetails = null;
+      User loggedUser = null;
 
       if(null != authorization && authorization.startsWith("Bearer ")) {
         token = authorization.substring(7);
@@ -41,8 +46,9 @@ public class JwtFilter extends OncePerRequestFilter {
       }
 
       if(null != userName && SecurityContextHolder.getContext().getAuthentication() == null) {
-        UserDetails userDetails
+         userDetails
                 = userService.loadUserByUsername(userName);
+
 
         if(jwtUtils.validateToken(token,userDetails)) {
           UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken
@@ -56,6 +62,13 @@ public class JwtFilter extends OncePerRequestFilter {
           SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
         }
 
+      }
+
+      if(Objects.nonNull(userDetails)){
+
+        CustomUserDetails customUserDetails = (CustomUserDetails) userDetails;
+
+        httpServletRequest.setAttribute("user", customUserDetails.getUser());
       }
       filterChain.doFilter(httpServletRequest, httpServletResponse);
     }
