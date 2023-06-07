@@ -70,7 +70,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
         httpServletRequest.setAttribute("user", customUserDetails.getUser());
       }
+
       filterChain.doFilter(httpServletRequest, httpServletResponse);
+
     }
 
 }
