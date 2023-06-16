@@ -46,7 +46,7 @@ public class AuthController {
 
 
 
-  @PostMapping("")
+  @PostMapping("/")
   public JwtResponse authenticate(@RequestBody JwtRequest jwtRequest) throws Exception{
 
 

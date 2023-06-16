@@ -3,8 +3,11 @@ package com.example.webdev.configs;
 import com.example.webdev.filters.JwtFilter;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -18,9 +21,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.Arrays;
 
 @Configuration
-@CrossOrigin
 public class WebSecurityConfiguration {
 
 
@@ -61,6 +70,7 @@ public class WebSecurityConfiguration {
       http.csrf()
               .disable()
               .authorizeHttpRequests()
+              .requestMatchers(HttpMethod.OPTIONS,"*").permitAll()
               .requestMatchers("/authenticate/*", "/error").permitAll()
               .requestMatchers("/home/*").hasAuthority("USER")
               .requestMatchers("/admin/*").hasAuthority("ADMIN")
@@ -87,18 +97,37 @@ public class WebSecurityConfiguration {
 //            .logout().permitAll();
 
 //    http.headers().frameOptions().sameOrigin();
-
     return http.build();
   }
 
 
+
   @Bean
-  public WebSecurityCustomizer webSecurityCustomizer() {
-    return (web) -> web.ignoring().requestMatchers("/images/**");
-//            .ignoring()
-//            .requestMatchers("/", "/images/**", "/js/**", "/webjars/**");
-//            . antMatchers("/images/**", "/js/**", "/webjars/**");
+  public FilterRegistrationBean corsFilter() {
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    CorsConfiguration config = new CorsConfiguration();
+    config.setAllowCredentials(true);
+    config.addAllowedOrigin("http://localhost:3000");
+    // TODO : add final one here
+    config.setAllowedMethods(Arrays.asList("POST", "OPTIONS", "GET", "DELETE", "PUT"));
+    config.setAllowedHeaders(Arrays.asList("X-Requested-With", "Origin", "Content-Type", "Accept", "Authorization"));
+    source.registerCorsConfiguration("/**", config);
+    FilterRegistrationBean bean = new FilterRegistrationBean(new CorsFilter(source));
+    bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+    return bean;
   }
+
+
+
+
+
+//  @Bean
+//  public WebSecurityCustomizer webSecurityCustomizer() {
+//    return (web) -> web.ignoring().requestMatchers("/images/**");
+////            .ignoring()
+////            .requestMatchers("/", "/images/**", "/js/**", "/webjars/**");
+////            . antMatchers("/images/**", "/js/**", "/webjars/**");
+//  }
 
 }
 
