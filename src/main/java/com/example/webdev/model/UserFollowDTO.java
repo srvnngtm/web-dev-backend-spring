@@ -10,10 +10,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserFollowDTO {
+  // a follows b
+  private Integer userId;   // current user (a)
 
-  private Integer userId;   // current user
-
-  private Integer followUserId;    // the user who is the user id is following.
+  private Integer followUserId;    // the user who the user id is following.(b)
 
   private Boolean isFollowing ;
 

@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -113,7 +114,7 @@ public class PostService {
               .postBody(post.getPostBody())
               .postTitle(post.getPostTitle())
               .imageUrl(post.getImageUrl())
-              .postUserName(userIdToUserNameMap.getOrDefault(post.getId(), "NO NAME " +
+              .postUserName(userIdToUserNameMap.getOrDefault(post.getPostUserId(), "NO NAME " +
                       "FOUND"))
               .upvoteCount(eachPostLikes.size())
               .isUpvoteByCurrentUser(!Objects.isNull(postUserLikeMap))
@@ -124,7 +125,7 @@ public class PostService {
 
     }
 
-
+    Collections.reverse(feedPostDTOList);
     FeedDTO feedDTO = FeedDTO.builder().postList(feedPostDTOList).build();
     return feedDTO;
   }

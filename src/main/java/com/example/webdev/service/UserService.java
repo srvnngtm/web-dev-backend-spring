@@ -2,9 +2,11 @@ package com.example.webdev.service;
 
 import com.example.webdev.model.BasicUserDetails;
 import com.example.webdev.model.FitUser;
+import com.example.webdev.model.PostUserLikeMap;
 import com.example.webdev.model.User;
 import com.example.webdev.model.UserDTO;
 import com.example.webdev.model.UserFollowDTO;
+import com.example.webdev.model.UserProfileDTO;
 import com.example.webdev.model.UserRegistrationDTO;
 import com.example.webdev.model.UserUserFollowMap;
 import com.example.webdev.repository.FitUserRepository;
@@ -21,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -63,6 +66,35 @@ public class UserService {
 
   }
 
+  public UserProfileDTO getUserProfileDetails(User loggedUser, Integer userId){
+
+    User user = userRepository.findById(userId).orElse(null);
+
+    if(Objects.isNull(user)){
+      throw new IllegalArgumentException("unable to find user");
+    }
+
+    FitUser fitUser = fitUserRepository.getFitUsersByUserId(user.getId());
+
+    if(Objects.isNull(fitUser)){
+      throw new IllegalArgumentException("unable to find fit user");
+    }
+
+
+    UserProfileDTO userProfileDTO = UserProfileDTO.builder()
+            .user(user)
+            .fitUser(fitUser)
+            .isFollowing(false)
+            .build();
+
+    Optional<UserUserFollowMap> userUserFollowMap =
+            userUserFollowMapRepository.findByUserIdAndAndFollowUserId(loggedUser.getId(), userId);
+
+
+    userUserFollowMap.ifPresent(userFollowMap -> userProfileDTO.setIsFollowing(userFollowMap.isFollowing()));
+
+    return userProfileDTO;
+  }
 
 
 
@@ -113,13 +145,53 @@ public class UserService {
 
 
 
+public void followUser(UserFollowDTO userFollowDTO ){
 
-  public List<UserDTO> getFollowersOfUser(Integer userId){
+  Optional<UserUserFollowMap> followMap =
+          userUserFollowMapRepository.findByUserIdAndAndFollowUserId(userFollowDTO.getUserId(),
+          userFollowDTO.getFollowUserId());
 
 
-    List<UserUserFollowMap> followerMap = userUserFollowMapRepository.findAllByUserId(userId);
+  if(followMap.isPresent()){
+    UserUserFollowMap userUserFollowMap = followMap.get();
+    userUserFollowMap.setFollowing(userFollowDTO.getIsFollowing());
+    userUserFollowMapRepository.save(userUserFollowMap);
 
-    List<Integer> userIds = followerMap.stream().map(UserUserFollowMap::getId).toList();
+  }else{
+
+    UserUserFollowMap userUserFollowMap = UserUserFollowMap.builder()
+            .userId(userFollowDTO.getUserId())
+            .followUserId(userFollowDTO.getFollowUserId())
+            .isFollowing(userFollowDTO.getIsFollowing())
+            .build();
+
+    userUserFollowMapRepository.save(userUserFollowMap);
+
+  }
+
+
+
+
+}
+
+  public List<UserDTO> getUserFollowing(Integer userId, Boolean isfollowing){
+
+    List<Integer> userIds;
+
+    if(isfollowing){
+      // get users he is following
+      List<UserUserFollowMap> followerMap = userUserFollowMapRepository.findAllByUserId(userId);
+      userIds  =
+              followerMap.stream().filter(UserUserFollowMap::isFollowing).map(UserUserFollowMap::getFollowUserId).toList();
+
+    }else{
+
+      // get users who follow him
+      List<UserUserFollowMap> followerMap = userUserFollowMapRepository.findAllByFollowUserId(userId);
+      userIds = followerMap.stream().map(UserUserFollowMap::getUserId).toList();
+
+    }
+
 
     List<User> userList = userRepository.findAllById(userIds);
     Map<Integer, User> userIdToUserMap =
@@ -131,17 +203,23 @@ public class UserService {
     Map<Integer, FitUser> userIdToFitUserMap =
             fitUsers.stream().collect(Collectors.toMap(FitUser::getUserId, Function.identity()));
 
-
     List<UserDTO> userDTOList = new ArrayList<>();
 
     for (Integer id : userIds) {
-      UserDTO userDTO = UserDTO.builder()
-              .firstName(userIdToUserMap.get(id).getFirstName())
-              .lastName(userIdToUserMap.get(id).getLastName())
-              .profilePicture(userIdToFitUserMap.get(id).getProfilePicture())
-              .build();
+      FitUser fitUser = userIdToFitUserMap.getOrDefault(id, null);
 
-      userDTOList.add(userDTO);
+      if(Objects.nonNull(fitUser)){
+        UserDTO userDTO = UserDTO.builder()
+                .firstName(userIdToUserMap.get(id).getFirstName())
+                .lastName(userIdToUserMap.get(id).getLastName())
+                .profilePicture(fitUser.getProfilePicture())
+                .userId(id)
+                .build();
+
+        userDTOList.add(userDTO);
+      }
+
+
 
     }
 
@@ -149,6 +227,44 @@ public class UserService {
 
   }
 
+
+  public List<UserDTO> getAllUsers(){
+
+    List<User> userList = userRepository.findAll();
+    Map<Integer, User> userIdToUserMap =
+            userList.stream().collect(Collectors.toMap(User::getId, Function.identity()));
+
+
+    List<FitUser> fitUsers = fitUserRepository.findAllByUserIdIn(
+            userIdToUserMap.keySet().stream().toList());
+
+    Map<Integer, FitUser> userIdToFitUserMap =
+            fitUsers.stream().collect(Collectors.toMap(FitUser::getUserId, Function.identity()));
+
+    List<UserDTO> userDTOList = new ArrayList<>();
+
+    for (Integer id : userIdToUserMap.keySet()) {
+      FitUser fitUser = userIdToFitUserMap.getOrDefault(id, null);
+
+      if(Objects.nonNull(fitUser)){
+        UserDTO userDTO = UserDTO.builder()
+                .firstName(userIdToUserMap.get(id).getFirstName())
+                .lastName(userIdToUserMap.get(id).getLastName())
+                .profilePicture(fitUser.getProfilePicture())
+                .userId(id)
+                .build();
+
+
+        userDTOList.add(userDTO);
+      }
+
+
+
+    }
+
+    return userDTOList;
+
+  }
 
 
 

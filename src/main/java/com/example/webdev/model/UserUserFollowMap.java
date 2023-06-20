@@ -19,9 +19,10 @@ public class UserUserFollowMap {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
 
-  private int userId;  // the logged in user id
+  // a follows b
+  private int userId;  // the logged in user id  (A)
 
-  private int followUserId;  // the user who is followed by current user
+  private int followUserId;  // the user who is followed by current user  (b)
 
   private boolean isFollowing;
 
