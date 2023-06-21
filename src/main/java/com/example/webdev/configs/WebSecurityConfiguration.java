@@ -71,7 +71,7 @@ public class WebSecurityConfiguration {
               .disable()
               .authorizeHttpRequests()
               .requestMatchers(HttpMethod.OPTIONS,"*").permitAll()
-              .requestMatchers("/authenticate/*", "/error").permitAll()
+              .requestMatchers("/authenticate/*", "/error","/no-auth/*").permitAll()
               .requestMatchers("/home/*").hasAuthority("USER")
               .requestMatchers("/admin/*").hasAuthority("ADMIN")
               .anyRequest()
@@ -118,16 +118,6 @@ public class WebSecurityConfiguration {
   }
 
 
-
-
-
-//  @Bean
-//  public WebSecurityCustomizer webSecurityCustomizer() {
-//    return (web) -> web.ignoring().requestMatchers("/images/**");
-////            .ignoring()
-////            .requestMatchers("/", "/images/**", "/js/**", "/webjars/**");
-////            . antMatchers("/images/**", "/js/**", "/webjars/**");
-//  }
 
 }
 
