@@ -46,8 +46,23 @@ public class PostService {
             .build();
 
     postRepository.save(post);
+  }
+
+  public void deletePost(Integer userId, Integer postId){
+    if(Objects.isNull(userId) || Objects.isNull(postId)){
+      throw new IllegalArgumentException("Invalid arguments");
+    }
+
+    Optional<Post> post = postRepository.findById(postId);
+    if(post.isPresent() && post.get().getPostUserId() == userId){
+      postRepository.delete(post.get());
+    }else{
+      throw new IllegalArgumentException("invalid user, or post doesnt exist");
+    }
 
   }
+
+
 
   public void updateLikeForPost(LikePostDTO likePostDTO){
 

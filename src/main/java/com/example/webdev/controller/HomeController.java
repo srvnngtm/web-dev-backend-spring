@@ -1,5 +1,6 @@
 package com.example.webdev.controller;
 
+import com.example.webdev.model.ApiResponse;
 import com.example.webdev.model.BasicUserDetails;
 import com.example.webdev.model.CreatePostDTO;
 import com.example.webdev.model.FeedDTO;
@@ -8,9 +9,14 @@ import com.example.webdev.model.User;
 import com.example.webdev.model.UserDTO;
 import com.example.webdev.model.UserFollowDTO;
 import com.example.webdev.model.UserProfileDTO;
+import com.example.webdev.model.UserRegistrationDTO;
+import com.example.webdev.model.trainer.Workout;
 import com.example.webdev.service.PostService;
 import com.example.webdev.service.UserService;
+import com.example.webdev.service.WorkoutService;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +28,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import javax.ws.rs.PathParam;
+
 @RestController
 @RequestMapping("/home")
 //@CrossOrigin
@@ -32,6 +40,9 @@ public class HomeController {
 
   @Autowired
   private PostService postService;
+
+  @Autowired
+  private WorkoutService workoutService;
 
 
   @GetMapping("")
@@ -73,6 +84,30 @@ public class HomeController {
 
   }
 
+  @PostMapping("/deletePost/{pid}")
+  public ApiResponse deletePost(@RequestAttribute("user") User loggedUser,
+                         @PathVariable("pid") Integer postId){
+
+    try{
+      postService.deletePost(loggedUser.getId(), postId);
+    }catch (Exception e){
+
+      return ApiResponse.builder()
+              .code(400)
+              .message(e.getMessage())
+              .build();
+    }
+
+
+    return ApiResponse.builder()
+            .code(200)
+            .message("Deleted successfully")
+            .build();
+
+  }
+
+
+
 
   @PostMapping("/updateLike")
   public void updatePostLike(@RequestAttribute("user") User loggedUser,
@@ -106,6 +141,45 @@ public class HomeController {
     return userService.getAllUsers();
   }
 
+
+
+  @GetMapping("/my-workouts")
+  public List<Workout> getMyWorkouts(@RequestAttribute("user")User loggedUser){
+    return workoutService.getWorkoutsByUserId(loggedUser.getId());
+  }
+
+
+  @PostMapping ("/request")
+  public void requestWorkouts(@RequestAttribute("user") User loggedUser){
+     workoutService.createNewWorkoutRequest(loggedUser.getId());
+  }
+
+
+
+  // update profile
+
+//  @PostMapping("/update-profile")
+//  public ApiResponse authenticate(@RequestBody UserRegistrationDTO userRegistrationDTO){
+//
+//    try {
+//      userService.userRegistration(userRegistrationDTO);
+//    } catch (Exception e) {
+//
+//      ApiResponse response = ApiResponse.builder()
+//              .code(400)
+//              .message(e.getMessage())
+//              .build();
+//
+//      return response;
+//
+//    }
+//
+//    return ApiResponse.builder()
+//            .code(200)
+//            .message("Registration Successful")
+//            .build();
+//
+//  }
 
 
 

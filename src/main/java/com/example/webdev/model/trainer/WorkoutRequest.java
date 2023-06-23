@@ -16,19 +16,14 @@ import lombok.ToString;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Workout {
+public class WorkoutRequest {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
 
   private Integer userId;
 
-  private String name;
-
-  private String instructions;
-
-  private Integer sets;
-
-  private Integer reps;
+  private Boolean isComplete;
 
 }
