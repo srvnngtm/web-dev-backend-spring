@@ -12,6 +12,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -74,7 +75,7 @@ public class WorkoutService {
   }
 
 
-  public List<FitUser> getRequestedUsers(){
+  public List<BasicUserDetails> getRequestedUsers(){
     List<WorkoutRequest> allRequests = workoutRequestRepository.findAll();
 
     if(CollectionUtils.isEmpty(allRequests)){
@@ -89,9 +90,13 @@ public class WorkoutService {
 
     List<Integer> userIds = allRequests.stream().map(WorkoutRequest::getUserId).toList();
 
-    List<FitUser> allFitUserDetails = userService.getAllFitUserDetails(userIds);
+    List<BasicUserDetails> basicUserDetailsList = new ArrayList<>();
+    for (Integer userId : userIds) {
+      basicUserDetailsList.add(userService.getBasicUserDetailsByUserId(userId));
+    }
 
-    return allFitUserDetails;
+    return basicUserDetailsList;
+
 
   }
 

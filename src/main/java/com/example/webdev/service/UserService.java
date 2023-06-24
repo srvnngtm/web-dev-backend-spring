@@ -7,6 +7,7 @@ import com.example.webdev.model.UserDTO;
 import com.example.webdev.model.UserFollowDTO;
 import com.example.webdev.model.UserProfileDTO;
 import com.example.webdev.model.UserRegistrationDTO;
+import com.example.webdev.model.UserUpdateDTO;
 import com.example.webdev.model.UserUserFollowMap;
 import com.example.webdev.repository.FitUserRepository;
 import com.example.webdev.repository.UserRepository;
@@ -15,8 +16,10 @@ import com.example.webdev.repository.UserUserFollowMapRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -47,8 +50,6 @@ public class UserService {
     List<FitUser> fitUsers = fitUserRepository.findAllByUserIdIn(userIds);
     return fitUsers;
   }
-
-
 
 
   public BasicUserDetails getBasicUserDetailsByUserId(Integer userId) {
@@ -155,6 +156,47 @@ public class UserService {
       userRepository.save(user);
 
     }
+  }
+
+  public void updateUser(UserUpdateDTO userUpdateDTO) {
+    Optional<User> optionalUser = userRepository.findById(userUpdateDTO.getUserId());
+    if (optionalUser.isEmpty()) {
+      return;
+    }
+
+    User user = optionalUser.get();
+
+    List<FitUser> fitUsers =
+            fitUserRepository.findAllByUserIdIn(Collections.singletonList(userUpdateDTO.getUserId()));
+
+    if (CollectionUtils.isEmpty(fitUsers)) {
+      return;
+    }
+
+
+    FitUser fitUser = fitUsers.get(0);
+
+    if (Objects.nonNull(userUpdateDTO.getFirstName())) {
+      user.setFirstName(userUpdateDTO.getFirstName());
+    }
+
+    if (Objects.nonNull(userUpdateDTO.getLastName())) {
+      user.setFirstName(userUpdateDTO.getLastName());
+    }
+
+    if (Objects.nonNull(userUpdateDTO.getHeight())) {
+      fitUser.setHeight(userUpdateDTO.getHeight());
+    }
+
+    if (Objects.nonNull(userUpdateDTO.getWeight())) {
+      fitUser.setHeight(userUpdateDTO.getWeight());
+    }
+
+
+    userRepository.save(user);
+    fitUserRepository.save(fitUser);
+
+
   }
 
 

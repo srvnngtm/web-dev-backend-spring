@@ -25,4 +25,6 @@ public class FeedPostDTO {
 
    private int upvoteCount;
 
+   private String postProfilePicUrl;
+
 }

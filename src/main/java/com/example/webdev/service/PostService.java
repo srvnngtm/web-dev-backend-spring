@@ -3,10 +3,12 @@ package com.example.webdev.service;
 import com.example.webdev.model.CreatePostDTO;
 import com.example.webdev.model.FeedDTO;
 import com.example.webdev.model.FeedPostDTO;
+import com.example.webdev.model.FitUser;
 import com.example.webdev.model.LikePostDTO;
 import com.example.webdev.model.Post;
 import com.example.webdev.model.PostUserLikeMap;
 import com.example.webdev.model.User;
+import com.example.webdev.repository.FitUserRepository;
 import com.example.webdev.repository.PostRepository;
 import com.example.webdev.repository.PostUserLikeMapRepository;
 import com.example.webdev.repository.UserRepository;
@@ -34,7 +36,8 @@ public class PostService {
 
   @Autowired
   private UserRepository userRepository;
-
+  @Autowired
+  private FitUserRepository fitUserRepository;
 
 
   public void createPost(CreatePostDTO createPostDTO, Integer userId){
@@ -110,6 +113,11 @@ public class PostService {
             .collect(Collectors.toMap(User::getId, User::getUsername ));
 
 
+    List<FitUser> fitUsers = fitUserRepository.findAllByUserIdIn(userIdToUserNameMap.keySet().stream().toList());
+    Map<Integer, String> userIdToProfilePicMap = fitUsers.stream()
+            .collect(Collectors.toMap(FitUser::getUserId, FitUser::getProfilePicture));
+
+
     List<FeedPostDTO> feedPostDTOList = new ArrayList<>();
 
 
@@ -131,6 +139,7 @@ public class PostService {
               .imageUrl(post.getImageUrl())
               .postUserName(userIdToUserNameMap.getOrDefault(post.getPostUserId(), "NO NAME " +
                       "FOUND"))
+              .postProfilePicUrl(userIdToProfilePicMap.getOrDefault(post.getPostUserId(), "N/A"))
               .upvoteCount(eachPostLikes.size())
               .isUpvoteByCurrentUser(!Objects.isNull(postUserLikeMap))
               .build();

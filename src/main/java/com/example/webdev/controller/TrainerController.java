@@ -25,8 +25,8 @@ public class TrainerController {
 
 
   @GetMapping("/requests")
-  public List<FitUser> getBasicUserDetails(@RequestAttribute("user") User loggedUser){
-    List<FitUser> requestedUsers = workoutService.getRequestedUsers();
+  public List<BasicUserDetails> getBasicUserDetails(@RequestAttribute("user") User loggedUser){
+    List<BasicUserDetails> requestedUsers = workoutService.getRequestedUsers();
     return requestedUsers;
   }
 
