@@ -13,4 +13,7 @@ import java.util.Optional;
 public interface PostUserLikeMapRepository extends JpaRepository<PostUserLikeMap, Integer> {
   Optional<PostUserLikeMap> findByUserIdAndPostId(Integer userId, Integer postId);
 
+  void deleteAllByUserId(Integer userId);
+
+
 }

@@ -71,9 +71,10 @@ public class WebSecurityConfiguration {
               .disable()
               .authorizeHttpRequests()
               .requestMatchers(HttpMethod.OPTIONS,"*").permitAll()
-              .requestMatchers("/authenticate/*", "/error","/no-auth/*").permitAll()
-              .requestMatchers("/home/*").hasAuthority("USER")
+              .requestMatchers("/authenticate/*", "/error","/no-auth/**").permitAll()
+              .requestMatchers("/home/*").hasAnyAuthority("USER","TRAINER", "ADMIN")
               .requestMatchers("/admin/*").hasAuthority("ADMIN")
+              .requestMatchers("/trainer/*").hasAnyAuthority("TRAINER", "ADMIN")
               .anyRequest()
               .authenticated().and()
               .sessionManagement()
@@ -108,6 +109,7 @@ public class WebSecurityConfiguration {
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowCredentials(true);
     config.addAllowedOrigin("http://localhost:3000");
+    config.addAllowedOrigin("https://fitnessappwebdevproj.netlify.app");
     // TODO : add final one here
     config.setAllowedMethods(Arrays.asList("POST", "OPTIONS", "GET", "DELETE", "PUT"));
     config.setAllowedHeaders(Arrays.asList("X-Requested-With", "Origin", "Content-Type", "Accept", "Authorization"));

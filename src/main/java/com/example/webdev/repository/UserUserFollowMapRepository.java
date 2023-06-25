@@ -16,7 +16,12 @@ public interface UserUserFollowMapRepository extends JpaRepository<UserUserFollo
 
   List<UserUserFollowMap> findAllByFollowUserId(Integer followUserId);
 
-  Optional<UserUserFollowMap> findByUserIdAndAndFollowUserId(Integer userId, Integer followUserId);
+  Optional<UserUserFollowMap> findByUserIdAndFollowUserId (Integer userId, Integer followUserId);
+
+
+  void deleteAllByUserId(Integer userId);
+
+  void deleteAllByFollowUserId(Integer followUserId);
 
 
 }

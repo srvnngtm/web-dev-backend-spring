@@ -19,5 +19,10 @@ public class UserDTO {
   private String profilePicture;
   private int userId;
 
+  private Double height;
+  private Double weight;
+
+
+
 
 }

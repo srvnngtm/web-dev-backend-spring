@@ -10,6 +10,8 @@ import com.example.webdev.model.UserRegistrationDTO;
 import com.example.webdev.model.UserUpdateDTO;
 import com.example.webdev.model.UserUserFollowMap;
 import com.example.webdev.repository.FitUserRepository;
+import com.example.webdev.repository.PostRepository;
+import com.example.webdev.repository.PostUserLikeMapRepository;
 import com.example.webdev.repository.UserRepository;
 import com.example.webdev.repository.UserUserFollowMapRepository;
 
@@ -39,6 +41,10 @@ public class UserService {
 
   @Autowired
   private UserUserFollowMapRepository userUserFollowMapRepository;
+  @Autowired
+  private PostRepository postRepository;
+  @Autowired
+  private PostUserLikeMapRepository postUserLikeMapRepository;
 
 
   public FitUser getFitUserDetails(Integer userId) {
@@ -87,11 +93,15 @@ public class UserService {
             .isFollowing(false)
             .build();
 
-    Optional<UserUserFollowMap> userUserFollowMap =
-            userUserFollowMapRepository.findByUserIdAndAndFollowUserId(loggedUser.getId(), userId);
 
+    if(Objects.nonNull(loggedUser)){
+      Optional<UserUserFollowMap> userUserFollowMap =
+              userUserFollowMapRepository.findByUserIdAndFollowUserId(loggedUser.getId(), userId);
 
-    userUserFollowMap.ifPresent(userFollowMap -> userProfileDTO.setIsFollowing(userFollowMap.isFollowing()));
+      userUserFollowMap.ifPresent(userFollowMap -> userProfileDTO.setIsFollowing(userFollowMap.isFollowing()));
+
+    }
+
 
     return userProfileDTO;
   }
@@ -181,7 +191,7 @@ public class UserService {
     }
 
     if (Objects.nonNull(userUpdateDTO.getLastName())) {
-      user.setFirstName(userUpdateDTO.getLastName());
+      user.setLastName(userUpdateDTO.getLastName());
     }
 
     if (Objects.nonNull(userUpdateDTO.getHeight())) {
@@ -189,7 +199,7 @@ public class UserService {
     }
 
     if (Objects.nonNull(userUpdateDTO.getWeight())) {
-      fitUser.setHeight(userUpdateDTO.getWeight());
+      fitUser.setWeight(userUpdateDTO.getWeight());
     }
 
 
@@ -203,7 +213,7 @@ public class UserService {
   public void followUser(UserFollowDTO userFollowDTO) {
 
     Optional<UserUserFollowMap> followMap =
-            userUserFollowMapRepository.findByUserIdAndAndFollowUserId(userFollowDTO.getUserId(),
+            userUserFollowMapRepository.findByUserIdAndFollowUserId(userFollowDTO.getUserId(),
                     userFollowDTO.getFollowUserId());
 
 
@@ -303,6 +313,8 @@ public class UserService {
                 .firstName(userIdToUserMap.get(id).getFirstName())
                 .lastName(userIdToUserMap.get(id).getLastName())
                 .profilePicture(fitUser.getProfilePicture())
+                .height(fitUser.getHeight())
+                .weight(fitUser.getWeight())
                 .userId(id)
                 .build();
 
@@ -317,5 +329,44 @@ public class UserService {
 
   }
 
+
+
+
+  public  void deleteUser(Integer userId){
+    userRepository.deleteById(userId);
+
+    List<FitUser> fitUsers = fitUserRepository.findAllByUserIdIn(Collections.singletonList(userId));
+    if(!CollectionUtils.isEmpty(fitUsers)){
+      fitUserRepository.deleteAll(fitUsers);
+    }
+
+
+    // delete from following and followers map
+    userUserFollowMapRepository.deleteAllByUserId(userId);
+    userUserFollowMapRepository.deleteAllByFollowUserId(userId);
+
+    // delete from like map
+    postUserLikeMapRepository.deleteAllByUserId(userId);
+
+    // delete from post
+    postRepository.deleteAllByPostUserId(userId);
+
+  }
+
+
+  public List<User>  getAllPendingTrainers(){
+    return userRepository.findAllByRole("UNASSIGNED");
+
+  }
+
+
+  public void approveTrainer(Integer userId){
+    Optional<User> optionalUser = userRepository.findById(userId);
+    if(optionalUser.isPresent()){
+      User user = optionalUser.get();
+      user.setRole("TRAINER");
+      userRepository.save(user);
+    }
+  }
 
 }
