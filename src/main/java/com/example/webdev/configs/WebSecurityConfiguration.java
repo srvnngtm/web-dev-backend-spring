@@ -110,6 +110,7 @@ public class WebSecurityConfiguration {
     config.setAllowCredentials(true);
     config.addAllowedOrigin("http://localhost:3000");
     config.addAllowedOrigin("https://fitnessappwebdevproj.netlify.app");
+    config.addAllowedOrigin("http://206.189.181.234:3000/");
     // TODO : add final one here
     config.setAllowedMethods(Arrays.asList("POST", "OPTIONS", "GET", "DELETE", "PUT"));
     config.setAllowedHeaders(Arrays.asList("X-Requested-With", "Origin", "Content-Type", "Accept", "Authorization"));
